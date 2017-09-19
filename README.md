@@ -10,6 +10,7 @@ The header file is just a few MB of size and therefore easy to copy to
 the servers running the brute-force.
 
 Rbd map the volume, which resides in the 'volumes' pool in Ceph storage:
+
 	sudo rbd map volumes/volume-<id>
 
 This returns with the volume mapped to /dev/rbd0. 
@@ -25,7 +26,7 @@ which I think is a problem of small size. The number of k-permutations of
 n is n!/(n-k)!.
 
 
-TEST 1:
+### TEST 1
 
 The idea was to create a multithreaded program and using the cryptsetup API
 (C language) directly to test the header keyslot with a NULL device string,
@@ -40,7 +41,7 @@ Compiling the program:
 	g++ -std=c++11 -Wall -o bforce bforce.cpp -lcryptsetup -lpthread
 
 
-RESULTS:
+### RESULTS
 
 Testing on a server with 16 CPU sockets with Hyperthreading enabled and 
 using Ubuntu 16.04 (server) with the default kernel settings and the 
@@ -53,37 +54,40 @@ variables or latency caused by thread migration to CPU on different NUMA
 node were proven not to be the root cause of the slowness of decrypting 
 the passphrase. 
 
-Test                              runtime        rate
------------------------------------------------------------- 
-multithreaded (32 threads):        
-default, free floating cpu,
-nice 0                            657.20 ms      1.52 /s
-cpu affinity, nice 0              636.39 ms      1.57 /s
-cpu affinity, nice -11            655.57 ms      1.53 /s
+| Test                           |  runtime     |  rate     |
+|--------------------------------|--------------|-----------|
+|multithreaded (32 threads):     |              |           |   
+|default, free floating cpu,     |              |           |
+|nice 0                          |  657.20 ms   |   1.52 /s |
+|cpu affinity, nice 0            |  636.39 ms   |   1.57 /s |
+|cpu affinity, nice -11          |  655.57 ms   |   1.53 /s |
+
 
 So the results looks like the cryptsetup crypt_activate_by_passphrase() 
 runs only in a single thread.
 
 
 
-TEST 2:
+### TEST 2
 
 The next attempt was to use multiple processes instead of threads and
 measure the time and rate for one cryptsetup test passphrase attempt.
 On the same server and with the default process ptiority and scheduler.
 
 
-RESULT:
+### RESULT
 
-Test                              runtime        rate
------------------------------------------------------------- 
-64 processes                      24 ms          41.51 /s
+| Test                          |  runtime     |   rate     |
+|-------------------------------|--------------|------------|
+|64 processes                   |   24 ms      |   41.51 /s |
+
 
 Beyond 32 processes the speedup starts to decreases up to 1 ms with 
 a maximum rate at 64 processes.
 
 
-TEST 3: (TODO)
+### TEST 3 
+(TODO)
 
 The runtime could be improved by avoiding the process forks from test 2 
 by using a pool of threads running in a multiprocesses environment, for
@@ -92,7 +96,8 @@ are forked at program init and ensure the threads run on a dedicated CPU
 socket.   
 
 
-TEST 4: (TODO)
+### TEST 4
+(TODO)
 
 Determine the multithreading capabilities of dm-crypt. Any kernel config
 required to make the passphrase test running multithreaded and not just
