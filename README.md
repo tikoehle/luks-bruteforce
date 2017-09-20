@@ -35,7 +35,7 @@ reading in [2][3][4][5] I decided to try a reference implementation of k-n permu
 from [5]. The implementation is building on std::next_permutation.
 
 It should be noted that std::next_permutation is a lexicographic algorithm. A particular 
-lexicographic ordering of the imput elements is required. Therefore std::sort is used 
+lexicographic ordering of the input elements is required. Therefore std::sort is used 
 to sort the input elements in the range [first, last) in ascending order before calling 
 std::next_permutation. The last generated permutation of std::next_permutation is the 
 lexicographic minimum of the ascending sorted input. The lexicographic minimum is the 
@@ -50,6 +50,8 @@ is n!/(n-k)!.
 
 
 ### TEST 1
+
+bforce.cpp
 
 The idea was to create a multithreaded program and using the cryptsetup API
 (C language) directly to test the header keyslot with a NULL device string,
@@ -93,9 +95,11 @@ runs only in a single thread.
 
 ### TEST 2
 
+bforce.py
+
 The next attempt was to use multiple processes instead of threads and
 measure the time and rate for one cryptsetup test passphrase attempt.
-On the same server and with the default process ptiority and scheduler.
+On the same server and with the default process priority and scheduler.
 
 
 ### RESULT
@@ -105,8 +109,9 @@ On the same server and with the default process ptiority and scheduler.
 |64 processes                   |   24 ms      |   41.51 /s |
 
 
-Beyond 32 processes the speedup smoothly decreases to 1 ms with 
-a maximum rate at 64 processes.
+Much better. The speed is 27 x faster than with test 1. 
+Beyond 32 processes the speedup smoothly decreases to 1 ms with a maximum 
+rate at 64 processes.
 
 
 ### TEST 3 
