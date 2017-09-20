@@ -18,12 +18,34 @@ Then excract the header from the rbd volume:
 
 	sudo cryptsetup luksHeaderBackup --header-backup-file $HOME/backup-header /dev/rbd0
 
-Because I have a vague guess about the content, format and length of the 
-target passphrase I should be able to brute-force it because the possible 
-k-n-permutations are in the area of 10^6. For example, with n=28 and k=5 
-we get 11793600 permutations. Even with n=34 we get 33390720 permutations
-which I think is a problem of small size. The number of k-permutations of 
-n is n!/(n-k)!.
+
+
+###Permutation
+
+In the given case some basic assumption exists about the characteristics 
+of the searched passphrase. For example, the format, characters and no element 
+occurs more than once, but without the requirement of using all the elements 
+from a given set. Because of this I decided to use the k-permutations of n 
+algorithm [1]. 
+In Python, itertools.permutations implements a k-n-permutation. I want to use 
+the cryptsetup C API directly. In C++ the standard library offers full permutations 
+of a range with std::next_permutation, but not k-n permutations. After some more 
+reading in [2][3][4][5] I decided to try the reference implementation of k-n permutation 
+from [5]. The implementation is building on std::next_permutation.
+
+It should be noted that std::next_permutation is a lexicographic algorithm. A particular 
+lexicographic ordering of the imput elements is required. Therefore std::sort is used 
+to sort the input elements in the range [first, last) in ascending order before calling 
+std::next_permutation. The last generated permutation of std::next_permutation is the 
+lexicographic minimum of the ascending sorted input. The lexicographic minimum is the 
+descending sorted input. To prove it, if you sort the input for std::next_permutation 
+in descending order, instead of ascending order, then std::next_permutation returns 
+exactly one permutation, which is the lexicographic minimum of the input.
+
+The number of k-n-permutations for the given case are in the area of 10^6. For example, 
+with n=28 and k=5 we get 11793600 permutations. Even with n=34 we get 33390720 
+permutations which is a problem of small size. The number of k-permutations of n 
+is n!/(n-k)!.
 
 
 ### TEST 1
@@ -102,5 +124,22 @@ socket.
 Determine the multithreading capabilities of dm-crypt. Any kernel config
 required to make the passphrase test running multithreaded and not just
 on the CPU where the process was forked.
+
+
+
+
+##References
+
+[1] https://en.wikipedia.org/wiki/Permutation
+[2] Sedgewick, R. "Permutation Generation Methods", 
+    Computer Science and Division of Applied Mathematics, 
+    Brown Unwersity, Prowdence, Rhode Island 02912
+[3] Sedgewick,  R. "Permutation generation methods", 
+    Dagstuhl Workshop on Data Structures, Wadern, Germany, February, 2002. 
+    https://www.cs.princeton.edu/~rs/talks/perms.pdf
+[4] https://stackoverflow.com/questions/2211915/combination-and-permutation-in-c/2616837#2616837
+[5] Brönnimann, H. "Algorithms for permutations and combinations, with and without repetitions",
+    Polytechnic University and Bloomberg L.P., 2008-5-16, WG21/N2639
+
 
 
